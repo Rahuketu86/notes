@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting to Logseq or Obsidian</title>
+    <script>
+        window.onload = function() {
+            // Get the current URL and path
+            const currentUrl = window.location.href;
+            const urlPath = window.location.pathname;
+
+            // Extract the page parameter from the URL
+            const pageMatch = currentUrl.match(/page=([^&]+)/);
+            const page = pageMatch ? decodeURIComponent(pageMatch[1]) : '';
+
+            let redirectUrl;
+
+            if (urlPath.includes('/logseq')) {
+                // Construct Logseq URL
+                redirectUrl = `logseq://graph/notes?page=${encodeURIComponent(page)}`;
+            } else if (urlPath.includes('/obsidian')) {
+                // Specify your vault name
+                const vaultName = 'YOUR_VAULT_NAME'; // Change this to your vault name
+                // Construct Obsidian URL
+                redirectUrl = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(page)}`;
+            } else {
+                // Handle unknown paths
+                redirectUrl = '#'; // Default to a safe URL or an error page
+            }
+
+            // Redirect to the new URL
+            window.location.href = redirectUrl;
+        };
+    </script>
+</head>
+<body>
+    <p>If you are not redirected automatically, follow this <a href="#" onclick="window.location.href=redirectUrl">link</a>.</p>
+</body>
+</html>
