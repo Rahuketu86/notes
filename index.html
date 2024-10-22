@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redirecting to Note...</title>
+    <meta http-equiv="refresh" content="0;url=https://github.com/your-username/your-repo">
+    <title>Note Taking Redirect Service</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -13,69 +14,15 @@
             height: 100vh;
             margin: 0;
             background-color: #f5f5f5;
-        }
-        .container {
             text-align: center;
-            padding: 20px;
-        }
-        .error {
-            color: #e53e3e;
-            display: none;
-            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Redirecting...</h1>
-        <p>You will be redirected to your note-taking app...</p>
-        <p class="error" id="errorMessage">
-            Failed to redirect. Please ensure you have the appropriate app installed.
-        </p>
+    <div>
+        <h1>Note Taking Redirect Service</h1>
+        <p>This is a redirect service for Logseq and Obsidian notes.</p>
+        <p>If you are not redirected, please visit the <a href="https://github.com/your-username/your-repo">repository</a>.</p>
     </div>
-
-    <script>
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        }
-
-        function handleRedirect() {
-            const page = getQueryParam('page');
-            const path = window.location.pathname;
-            
-            if (!page) {
-                document.getElementById('errorMessage').style.display = 'block';
-                return;
-            }
-
-            let protocolHandler;
-            if (path.startsWith('/logseq/')) {
-                // For Logseq, use direct graph format with 'notes' as graph name
-                protocolHandler = `logseq://graph/notes?page=${encodeURIComponent(page)}`;
-            } else if (path.startsWith('/obsidian/')) {
-                // For Obsidian, include 'pages' directory in the file path
-                protocolHandler = `obsidian://open?vault=notes&file=pages%2F${encodeURIComponent(page)}`;
-            } else {
-                document.getElementById('errorMessage').style.display = 'block';
-                return;
-            }
-
-            // Try to redirect
-            try {
-                window.location.href = protocolHandler;
-                
-                // Show error message if redirect doesn't happen within 2 seconds
-                setTimeout(() => {
-                    document.getElementById('errorMessage').style.display = 'block';
-                }, 2000);
-            } catch (e) {
-                document.getElementById('errorMessage').style.display = 'block';
-            }
-        }
-
-        // Execute redirect when page loads
-        window.onload = handleRedirect;
-    </script>
 </body>
 </html>
