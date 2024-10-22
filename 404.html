@@ -45,6 +45,112 @@
             return new URLSearchParams(window.location.search);
         }
 
+        function getVaultOrGraphName(path) {
+            // Split the path and filter out empty strings
+            const parts = path.split('/').filter(part => part.length > 0);
+            // Return the last part of the path
+            return parts[parts.length - 1];
+        }
+
+        function handleRedirect() {
+            const params = getQueryParams();
+            const page = params.get('page');
+            const path = window.location.pathname;
+            
+            if (!page) {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            // Get the vault/graph name from the path
+            const containerName = getVaultOrGraphName(path);
+            
+            let protocolHandler;
+            if (path.includes('logseq')) {
+                // For Logseq, use the extracted graph name
+                protocolHandler = `logseq://graph/${encodeURIComponent(containerName)}?page=${encodeURIComponent(page)}`;
+            } else if (path.includes('obsidian')) {
+                // For Obsidian, use the extracted vault name and include pages directory
+                protocolHandler = `obsidian://open?vault=${encodeURIComponent(containerName)}&file=pages%2F${encodeURIComponent(page)}`;
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            // Debug info - can be removed in production
+            console.log('Path:', path);
+            console.log('Container Name:', containerName);
+            console.log('Page:', page);
+            console.log('Protocol Handler:', protocolHandler);
+
+            // Try to redirect
+            try {
+                window.location.href = protocolHandler;
+                
+                // Show error message if redirect doesn't happen within 2 seconds
+                setTimeout(() => {
+                    document.getElementById('errorMessage').style.display = 'block';
+                }, 2000);
+            } catch (e) {
+                document.getElementById('errorMessage').style.display = 'block';
+                console.error('Redirect error:', e);
+            }
+        }
+
+        // Execute redirect when page loads
+        window.onload = handleRedirect;
+    </script>
+</body>
+</html>
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to Note...</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #e53e3e;
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Redirecting...</h1>
+        <p>You will be redirected to your note-taking app...</p>
+        <p class="error" id="errorMessage">
+            Failed to redirect. Please ensure you have the appropriate app installed.
+        </p>
+    </div>
+
+    <script>
+        function getQueryParams() {
+            // Get query parameters from the URL fragment if present (for 404 redirect)
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                return new URLSearchParams(hash);
+            }
+            // Otherwise get from regular query string
+            return new URLSearchParams(window.location.search);
+        }
+
         function handleRedirect() {
             const params = getQueryParams();
             const page = params.get('page');
@@ -81,6 +187,6 @@
 
         // Execute redirect when page loads
         window.onload = handleRedirect;
-    </script>
+    </script> -->
 </body>
 </html>
