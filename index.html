@@ -40,40 +40,22 @@
             return urlParams.get(param);
         }
 
-        function extractPathComponents(path) {
-            // Extract graph/vault name from the path
-            // Format: /logseq/{graphName}/notes or /obsidian/{vaultName}/notes
-            const parts = path.split('/').filter(p => p);
-            if (parts.length >= 3) {
-                return {
-                    app: parts[0],          // 'logseq' or 'obsidian'
-                    container: parts[1],     // graph or vault name
-                    type: parts[2]          // 'notes'
-                };
-            }
-            return null;
-        }
-
         function handleRedirect() {
             const page = getQueryParam('page');
-            const pathComponents = extractPathComponents(window.location.pathname);
+            const path = window.location.pathname;
             
-            if (!page || !pathComponents) {
+            if (!page) {
                 document.getElementById('errorMessage').style.display = 'block';
                 return;
             }
 
             let protocolHandler;
-            if (pathComponents.app === 'logseq') {
-                // For Logseq, we use the direct graph format
-                // Convert the graph name and page to the correct format
-                const graphName = pathComponents.container;
-                // Note: we don't encode the slash in the page path as it's part of the navigation
-                const pagePath = page.replace(/%2F/g, '/');
-                protocolHandler = `logseq://graph/${graphName}?page=${encodeURIComponent(pagePath)}`;
-            } else if (pathComponents.app === 'obsidian') {
-                // For Obsidian, we specify the vault and the file
-                protocolHandler = `obsidian://open?vault=${encodeURIComponent(pathComponents.container)}&file=${encodeURIComponent(page)}`;
+            if (path.startsWith('/logseq/')) {
+                // For Logseq, use direct graph format with 'notes' as graph name
+                protocolHandler = `logseq://graph/notes?page=${encodeURIComponent(page)}`;
+            } else if (path.startsWith('/obsidian/')) {
+                // For Obsidian, include 'pages' directory in the file path
+                protocolHandler = `obsidian://open?vault=notes&file=pages%2F${encodeURIComponent(page)}`;
             } else {
                 document.getElementById('errorMessage').style.display = 'block';
                 return;
