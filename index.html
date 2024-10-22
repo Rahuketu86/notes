@@ -2,38 +2,98 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Redirecting to Logseq or Obsidian</title>
-    <script>
-        window.onload = function() {
-            // Get the current URL and path
-            const currentUrl = window.location.href;
-            const urlPath = window.location.pathname;
-
-            // Extract the page parameter from the URL
-            const pageMatch = currentUrl.match(/page=([^&]+)/);
-            const page = pageMatch ? decodeURIComponent(pageMatch[1]) : '';
-
-            let redirectUrl;
-
-            if (urlPath.includes('/logseq')) {
-                // Construct Logseq URL
-                redirectUrl = `logseq://graph/notes?page=${encodeURIComponent(page)}`;
-            } else if (urlPath.includes('/obsidian')) {
-                // Specify your vault name
-                const vaultName = 'notes'; // Change this to your vault name
-                // Construct Obsidian URL
-                redirectUrl = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(page)}`;
-            } else {
-                // Handle unknown paths
-                redirectUrl = '#'; // Default to a safe URL or an error page
-            }
-
-            // Redirect to the new URL
-            window.location.replace(redirectUrl);
-        };
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting to Note...</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        .error {
+            color: #e53e3e;
+            display: none;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    <p>If you are not redirected automatically, follow this <a href="#" onclick="window.location.href=redirectUrl">link</a>.</p>
+    <div class="container">
+        <h1>Redirecting...</h1>
+        <p>You will be redirected to your note-taking app...</p>
+        <p class="error" id="errorMessage">
+            Failed to redirect. Please ensure you have the appropriate app installed.
+        </p>
+    </div>
+
+    <script>
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        function extractPathComponents(path) {
+            // Extract graph/vault name from the path
+            // Format: /logseq/{graphName}/notes or /obsidian/{vaultName}/notes
+            const parts = path.split('/').filter(p => p);
+            if (parts.length >= 3) {
+                return {
+                    app: parts[0],          // 'logseq' or 'obsidian'
+                    container: parts[1],     // graph or vault name
+                    type: parts[2]          // 'notes'
+                };
+            }
+            return null;
+        }
+
+        function handleRedirect() {
+            const page = getQueryParam('page');
+            const pathComponents = extractPathComponents(window.location.pathname);
+            
+            if (!page || !pathComponents) {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            let protocolHandler;
+            if (pathComponents.app === 'logseq') {
+                // For Logseq, we use the direct graph format
+                // Convert the graph name and page to the correct format
+                const graphName = pathComponents.container;
+                // Note: we don't encode the slash in the page path as it's part of the navigation
+                const pagePath = page.replace(/%2F/g, '/');
+                protocolHandler = `logseq://graph/${graphName}?page=${encodeURIComponent(pagePath)}`;
+            } else if (pathComponents.app === 'obsidian') {
+                // For Obsidian, we specify the vault and the file
+                protocolHandler = `obsidian://open?vault=${encodeURIComponent(pathComponents.container)}&file=${encodeURIComponent(page)}`;
+            } else {
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+
+            // Try to redirect
+            try {
+                window.location.href = protocolHandler;
+                
+                // Show error message if redirect doesn't happen within 2 seconds
+                setTimeout(() => {
+                    document.getElementById('errorMessage').style.display = 'block';
+                }, 2000);
+            } catch (e) {
+                document.getElementById('errorMessage').style.display = 'block';
+            }
+        }
+
+        // Execute redirect when page loads
+        window.onload = handleRedirect;
+    </script>
 </body>
 </html>
