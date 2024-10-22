@@ -20,7 +20,7 @@
                 redirectUrl = `logseq://graph/notes?page=${encodeURIComponent(page)}`;
             } else if (urlPath.includes('/obsidian')) {
                 // Specify your vault name
-                const vaultName = 'YOUR_VAULT_NAME'; // Change this to your vault name
+                const vaultName = 'notes'; // Change this to your vault name
                 // Construct Obsidian URL
                 redirectUrl = `obsidian://open?vault=${encodeURIComponent(vaultName)}&file=${encodeURIComponent(page)}`;
             } else {
